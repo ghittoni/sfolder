@@ -13,21 +13,15 @@ Don't forget to store your keys, if you lose them, your files are gone forever. 
 Run from project directory:
 
 ```bash
-./encrypt.sh "folder_name"
-./decrypt.sh "folder_name.tar.zst.enc"
+encrypt.sh "folder_name"
+decrypt.sh "folder_name.tar.zst.enc"
 ```
 
 Run from a different directory (for example `Desktop/`):
 
 ```bash
-./sfolder/encrypt.sh "./My Folder"
-./sfolder/decrypt.sh "./My Folder.tar.zst.enc"
-```
-
-Absolute path example:
-
-```bash
-./sfolder/encrypt.sh "/Users/michele/Desktop/My Folder"
+sfolder/encrypt.sh "My Folder"
+sfolder/decrypt.sh "My Folder.tar.zst.enc"
 ```
 
 Notes:
