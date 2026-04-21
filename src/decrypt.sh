@@ -2,7 +2,10 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/utils/standout_message.sh"
+source "$SCRIPT_DIR/utils/output/standout_message.sh"
+source "$SCRIPT_DIR/utils/global.sh"
+
+trap key_cleanup EXIT
 
 # Ensures required dependency is available before continuing.
 if ! command -v zstd >/dev/null 2>&1; then
@@ -29,12 +32,15 @@ if [ ! -f "$ENCRYPTED_ARCHIVE" ]; then
     exit 1
 fi
 
+KEY=$(security find-generic-password -a "$ACCOUNT" -s "$SERVICE" -w)
+
 # Decrypts, decompress and extracts the archive payload without creating
 # any intermediate file
 if ! openssl enc -d \
         -aes-256-cbc \
         -pbkdf2 \
         -iter 1000000 \
+        -pass "pass:$KEY" \
         -in "$ENCRYPTED_ARCHIVE" \
     | zstd -d -c \
     | tar -xvf -; 
@@ -42,6 +48,7 @@ if ! openssl enc -d \
 
     standout_message "Decryption failed: wrong passphrase or corrupted encrypted archive."
     exit 1
-else
-    standout_message "Archive extracted successfully."
 fi
+
+standout_message "Archive extracted successfully."
+exit 0

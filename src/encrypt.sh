@@ -2,7 +2,10 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/utils/standout_message.sh"
+source "$SCRIPT_DIR/utils/output/standout_message.sh"
+source "$SCRIPT_DIR/utils/global.sh"
+
+trap key_cleanup EXIT
 
 # Ensures required dependency is available before continuing.
 if ! command -v zstd >/dev/null 2>&1; then
@@ -24,6 +27,7 @@ if [ ! -d "$FOLDER" ]; then
 fi
 
 ENCRYPTED_ARCHIVE="${FOLDER}.tar.zst.enc"
+KEY=$(security find-generic-password -a "$ACCOUNT" -s "$SERVICE" -w)
 
 # Creates a tar stream, compresses it with zstd, and encrypts it without 
 # creating any additional temp file
@@ -34,12 +38,13 @@ if ! tar -cf - "$FOLDER" \
         -salt \
         -pbkdf2 \
         -iter 1000000 \
+        -pass "pass:$KEY" \
         -out "$ENCRYPTED_ARCHIVE"; 
     then
 
-    rm -f "$ENCRYPTED_ARCHIVE"
     standout_message "Encryption failed: archive creation, compression, or encryption failed."
     exit 1
-else
-    standout_message "Encrypted archive created: $ENCRYPTED_ARCHIVE"
 fi
+
+standout_message "Encrypted archive created: $ENCRYPTED_ARCHIVE"
+exit 0
