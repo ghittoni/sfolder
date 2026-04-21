@@ -9,7 +9,7 @@ source "${PROJECT_ROOT}/src/utils/global.sh"
 
 # a key has been passed
 if (( $# == 1 )); then
-    KEY="${$1}"
+    KEY="$1"
 
 # no key passed 
 else
