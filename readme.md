@@ -3,13 +3,22 @@
 ### Introduction
 This project is meant for easy and fast encryption of folder containing sensitive data that will be uploaded on the cloud.
 
-### Auto-generated key
-The program will propose you an auto-generated key while encrypting, you can enter it or you can decide to use your own key.
-
-### Storing the keys
-Don't forget to store your keys, if you lose them, your files are gone forever. I highly recomment using a password manager for storing the keys
+### Key generation
+The program will create a safe key that you can use fro encrypting your data, i highly recommend to store it in a password manager. If you lose your key you may look in the logs folder under the file generated_key, if not there your data are gone.
 
 ### Usage
+Install zstd:
+
+```bash
+brew install zstd 
+```
+
+Create a key and save it in a password manager:
+
+```bash
+key_generator.sh 
+```
+
 Run from project directory:
 
 ```bash

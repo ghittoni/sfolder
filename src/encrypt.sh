@@ -4,6 +4,12 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/utils/standout_message.sh"
 
+# Ensures required dependency is available before continuing.
+if ! command -v zstd >/dev/null 2>&1; then
+    standout_message "Error: 'zstd' is not installed or not available in PATH."
+    exit 1
+fi
+
 # If the user forgets to specify the folder name an error occurs
 if (( $# < 1 )); then
     standout_message "Error, you need to specify the name of the folder you want to encrypt.\nExample: encrypt.sh <folder_name>"
@@ -18,16 +24,6 @@ if [ ! -d "$FOLDER" ]; then
 fi
 
 ENCRYPTED_ARCHIVE="${FOLDER}.tar.zst.enc"
-
-# Creates and suggests a key to the user
-GENERATED_KEY=$(openssl rand -base64 32)
-standout_message "Suggested passphrase: ${GENERATED_KEY}"
-
-# Saves the generated key in a file 
-LOGS_DIR="$SCRIPT_DIR/logs"
-LOGS_DIR_GENERATED_KEYS="${LOGS_DIR}/generated_keys"
-mkdir -p "$LOGS_DIR"
-echo "${GENERATED_KEY}" >> "$LOGS_DIR_GENERATED_KEYS"
 
 # Creates a tar stream, compresses it with zstd, and encrypts it without 
 # creating any additional temp file

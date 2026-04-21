@@ -4,6 +4,12 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/utils/standout_message.sh"
 
+# Ensures required dependency is available before continuing.
+if ! command -v zstd >/dev/null 2>&1; then
+    standout_message "Error: 'zstd' is not installed or not available in PATH."
+    exit 1
+fi
+
 # If the user forgets to specify the encrypted archive name.
 if (( $# < 1 )); then
     standout_message "Error, you need to specify the encrypted archive you want to decrypt.\nExample: decrypt.sh <archive.tar.zst.enc>"
