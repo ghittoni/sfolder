@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
-source ./utils/standout_message.sh
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/utils/standout_message.sh"
 
 # If the user forgets to specify the folder name an error occurs
 if (( $# < 1 )); then
@@ -26,7 +28,7 @@ GENERATED_KEY=$(openssl rand -base64 32)
 standout_message "Suggested passphrase: ${GENERATED_KEY}"
 
 # Saves the generated key in a file 
-LOGS_DIR="logs"
+LOGS_DIR="$SCRIPT_DIR/logs"
 LOGS_DIR_GENERATED_KEYS="${LOGS_DIR}/generated_keys"
 mkdir -p "$LOGS_DIR"
 echo "${GENERATED_KEY}" >> "$LOGS_DIR_GENERATED_KEYS"

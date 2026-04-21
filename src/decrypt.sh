@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
-source ./utils/standout_message.sh
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/utils/standout_message.sh"
 
 # If the user forgets to specify the encrypted archive name.
 if (( $# < 1 )); then
