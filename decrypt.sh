@@ -1,24 +1,41 @@
 #!/bin/bash
+set -euo pipefail
+source ./utils/standout_message.sh
 
-# if the user forgets to specify the name of the encrypted archive
-if [ -z "$1" ]; then
-    echo "Error: you need to specify the name of the encrypted archive you want to decrypt."
-    echo "Example: decrypt.sh <archive.tar.xz.enc>"
+# If the user forgets to specify the encrypted archive name.
+if (( $# < 1 )); then
+    standout_message "Error, you need to specify the encrypted archive you want to decrypt.\nExample: decrypt.sh <archive.tar.zst.enc>"
     exit 1
 fi
 
-FOLDER="$1"
-ARCHIVE="$FOLDER.tar.zst"
-ENCRYPTED_ARCHIVE="$ARCHIVE.enc"
+INPUT="$1"
+if [[ "$INPUT" == *.tar.zst.enc ]]; then
+    ENCRYPTED_ARCHIVE="$INPUT"
+    ARCHIVE="${INPUT%.enc}"
+else
+    standout_message "Error, you need to specify a .tar.zst.enc encrypted archive to proceed"
+    exit 1
+fi
 
-openssl enc -d \
-        -aes-256-cbc \
-        -pbkdf2 \
-        -in "$ENCRYPTED_ARCHIVE" \
-        -out "$ARCHIVE"
+if [ ! -f "$ENCRYPTED_ARCHIVE" ]; then
+    standout_message "Error: encrypted archive '$ENCRYPTED_ARCHIVE' does not exist."
+    exit 1
+fi
 
-tar --use-compress-program="zstd" \
-    -xvf \
-    "$ARCHIVE"
+if ! openssl enc -d -aes-256-cbc -pbkdf2 -in "$ENCRYPTED_ARCHIVE" -out "$ARCHIVE"; then
+    rm -f "$ARCHIVE"
+    standout_message "Decryption failed: wrong passphrase or corrupted encrypted archive."
+    exit 1
+fi
 
+if ! zstd -t "$ARCHIVE" >/dev/null 2>&1; then
+    rm -f "$ARCHIVE"
+    standout_message "Decryption output is not a valid .zst archive."
+    exit 1
+fi
+
+# Decompress the stream and extract the tar payload.
+zstd -d -c "$ARCHIVE" | tar -xvf -
 rm -f "$ARCHIVE"
+
+standout_message "Archive extracted successfully."
