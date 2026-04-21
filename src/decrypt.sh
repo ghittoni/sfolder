@@ -13,7 +13,6 @@ fi
 INPUT="$1"
 if [[ "$INPUT" == *.tar.zst.enc ]]; then
     ENCRYPTED_ARCHIVE="$INPUT"
-    ARCHIVE="${INPUT%.enc}"
 else
     standout_message "Error, you need to specify a .tar.zst.enc encrypted archive to proceed"
     exit 1
@@ -24,27 +23,19 @@ if [ ! -f "$ENCRYPTED_ARCHIVE" ]; then
     exit 1
 fi
 
+# Decrypts, decompress and extracts the archive payload without creating
+# any intermediate file
 if ! openssl enc -d \
         -aes-256-cbc \
         -pbkdf2 \
         -iter 1000000 \
         -in "$ENCRYPTED_ARCHIVE" \
-        -out "$ARCHIVE"; 
+    | zstd -d -c \
+    | tar -xvf -; 
     then
 
-    rm -f "$ARCHIVE"
     standout_message "Decryption failed: wrong passphrase or corrupted encrypted archive."
     exit 1
+else
+    standout_message "Archive extracted successfully."
 fi
-
-if ! zstd -t "$ARCHIVE" >/dev/null 2>&1; then
-    rm -f "$ARCHIVE"
-    standout_message "Decryption output is not a valid .zst archive."
-    exit 1
-fi
-
-# Decompress the stream and extract the tar payload.
-zstd -d -c "$ARCHIVE" | tar -xvf -
-rm -f "$ARCHIVE"
-
-standout_message "Archive extracted successfully."

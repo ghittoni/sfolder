@@ -17,11 +17,7 @@ if [ ! -d "$FOLDER" ]; then
     exit 1
 fi
 
-ARCHIVE="${FOLDER}.tar.zst"
-ENCRYPTED_ARCHIVE="${ARCHIVE}.enc"
-
-# Create a tar stream and compress it with zstd.
-tar -cvf - "$FOLDER" | zstd -v -o "$ARCHIVE"
+ENCRYPTED_ARCHIVE="${FOLDER}.tar.zst.enc"
 
 # Creates and suggests a key to the user
 GENERATED_KEY=$(openssl rand -base64 32)
@@ -33,15 +29,21 @@ LOGS_DIR_GENERATED_KEYS="${LOGS_DIR}/generated_keys"
 mkdir -p "$LOGS_DIR"
 echo "${GENERATED_KEY}" >> "$LOGS_DIR_GENERATED_KEYS"
 
-# Encrypts the archive
-openssl enc \
-    -aes-256-cbc \
-    -salt \
-    -pbkdf2 \
-    -iter 1000000 \
-    -in "$ARCHIVE" \
-    -out "$ENCRYPTED_ARCHIVE"
+# Creates a tar stream, compresses it with zstd, and encrypts it without 
+# creating any additional temp file
+if ! tar -cf - "$FOLDER" \
+    | zstd -c \
+    | openssl enc \
+        -aes-256-cbc \
+        -salt \
+        -pbkdf2 \
+        -iter 1000000 \
+        -out "$ENCRYPTED_ARCHIVE"; 
+    then
 
-rm -f "$ARCHIVE"
-
-standout_message "Encrypted archive created: $ENCRYPTED_ARCHIVE"
+    rm -f "$ENCRYPTED_ARCHIVE"
+    standout_message "Encryption failed: archive creation, compression, or encryption failed."
+    exit 1
+else
+    standout_message "Encrypted archive created: $ENCRYPTED_ARCHIVE"
+fi
