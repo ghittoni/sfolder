@@ -1,4 +1,4 @@
-# sFolder
+# sfolder, secure-folder
 
 ### Introduction
 This project is meant for easy and fast encryption of folder containing sensitive data that will be uploaded on the cloud.
