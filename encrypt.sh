@@ -24,12 +24,19 @@ tar -cvf - "$FOLDER" | zstd -v -o "$ARCHIVE"
 # Creates and suggests a key to the user
 GENERATED_KEY=$(openssl rand -base64 32)
 standout_message "Suggested passphrase: ${GENERATED_KEY}"
-echo "${GENERATED_KEY}" >> generated_keys
+
+# Saves the generated key in a file 
+LOGS_DIR="logs"
+LOGS_DIR_GENERATED_KEYS="${LOGS_DIR}/generated_keys"
+mkdir -p "$LOGS_DIR"
+echo "${GENERATED_KEY}" >> "$LOGS_DIR_GENERATED_KEYS"
 
 # Encrypts the archive
 openssl enc \
     -aes-256-cbc \
-    -salt -pbkdf2 \
+    -salt \
+    -pbkdf2 \
+    -iter 1000000 \
     -in "$ARCHIVE" \
     -out "$ENCRYPTED_ARCHIVE"
 

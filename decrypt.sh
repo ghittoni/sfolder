@@ -22,7 +22,14 @@ if [ ! -f "$ENCRYPTED_ARCHIVE" ]; then
     exit 1
 fi
 
-if ! openssl enc -d -aes-256-cbc -pbkdf2 -in "$ENCRYPTED_ARCHIVE" -out "$ARCHIVE"; then
+if ! openssl enc -d \
+        -aes-256-cbc \
+        -pbkdf2 \
+        -iter 1000000 \
+        -in "$ENCRYPTED_ARCHIVE" \
+        -out "$ARCHIVE"; 
+    then
+
     rm -f "$ARCHIVE"
     standout_message "Decryption failed: wrong passphrase or corrupted encrypted archive."
     exit 1
