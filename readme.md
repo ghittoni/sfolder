@@ -40,5 +40,4 @@ Run from the project directory:
 
 Notes:
 - Utility files (`utils/...`) are resolved from the script directory.
-- Generated keys are stored in `sfolder/logs/generated_keys`.
 - Input arguments keep normal shell behavior: relative paths are relative to your current directory.
